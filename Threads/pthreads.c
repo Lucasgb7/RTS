@@ -11,6 +11,12 @@
 #include <fcntl.h>
 #define LENGTH 1500
 
+int sum;
+int total_itens;
+int weights[LENGTH];
+
+pthread_mutex_t lock;
+
 int kbhit(void)
 {
     struct termios oldt, newt;
@@ -38,39 +44,56 @@ int kbhit(void)
     return 0;
 }
 
-void *conveyorBelt_A(void *i){
-    int *x = (int *)i;
-    while(++(*x) < LENGTH)
-        ;
-    printf("Esteira 1 - CHEIA\t");
+void *conveyorBelt_A(void *args){
 
-    return NULL;
-}
-void *conveyorBelt_B(void *i){
-    int *x = (int *)i;
-    while(++(*x) < LENGTH)
-        ;
-    printf("Esteira 2 - CHEIA\t");
-
-    return NULL;
-}
-void *conveyorBelt_C(void *i){
-    int *x = (int *)i;
-    while(++(*x) < LENGTH)
-        ;
-    printf("Esteira 3 - CHEIA\t");
+    while(total_itens<LENGTH){
+        //----Inserir if gettecla == tecla aqui-----//      
+        pthread_mutex_lock(&lock); //Bloqueia a variavel 
+        total_itens++;             //Atualiza o numero de itens
+        weights[total_itens] = 1;   //Adiciona o peso do item no vetor
+        pthread_mutex_unlock(&lock); //Libera a variavel 
+        //-----------------------------------------//
+    }
 
     return NULL;
 }
 
+void *conveyorBelt_B(void *args){
 
- 
+    while(total_itens<LENGTH){
+        //----Inserir if gettecla == tecla aqui-----//
+        pthread_mutex_lock(&lock); //Bloqueia a variavel 
+        total_itens++;             //Atualiza o numero de itens
+        weights[total_itens] = 1;   //Adiciona o peso do item no vetor
+        pthread_mutex_unlock(&lock); //Libera a variavel 
+        //-----------------------------------------//
+    }
+    return NULL;
+}
+
+void *conveyorBelt_C(void *args){
+
+    while(total_itens<LENGTH){
+        //----Inserir if gettecla == tecla aqui-----//
+        pthread_mutex_lock(&lock); //Bloqueia a variavel 
+        total_itens++;             //Atualiza o numero de itens
+        weights[total_itens] = 1;   //Adiciona o peso do item no vetor
+        pthread_mutex_unlock(&lock); //Libera a variavel 
+        //-----------------------------------------//
+
+    }
+    
+    return NULL;
+}
+
+
 
 int main() {
-    // Contagem nas esteiras
-    int sum = 0;
-    int a = 0, b = 0, c = 0;
-    int weight[LENGTH];
+
+    //Inicializa as variaveis
+    sum = 0
+    total_itens = 0
+
     // Variaveis para calculo de tempo
     clock_t start, end;
     double cpu_time_used;
@@ -82,7 +105,7 @@ int main() {
     pthread_t thread1,thread2, thread3;
 
     // Cria as threads das esteiras
-    if (pthread_create(&thread1, NULL, *conveyorBelt_A, &a)){
+    if (pthread_create(&thread1, NULL, *conveyorBelt_A, &)){
         fprintf(stderr, "Erro ao criar thread\n");
         return 1;
     }
@@ -107,8 +130,8 @@ int main() {
         }
 
     
-    sum = a + b + c;
-
+    
+    //----Verificar(if) se alguma thread acabou, se sim, é porque o limite de itens foi atingido ------//
     // Aguarda as outras threads terminarem
     if (pthread_join(thread1, NULL)){
         fprintf(stderr, "Error joining thread\n");
@@ -122,9 +145,17 @@ int main() {
         fprintf(stderr, "Error joining thread\n");
         return 2;
     }
-    // mostra o resultado
-    printf("\nSoma total: %d\n", sum);
-    printf("Esteira A: %d\nEsteira B: %d\nEsteira C: %d\n", a, b, c);
+    //------------------------------------------------------------------------------------------------//
+    
+    //Soma os pesos que estão armazenados no vetor
+    for(int i = 0; i<LENGTH; i++){
+        sum+= weights[i];
+    }
+
+    //Mostra a soma dos pesos e a quantidade de itens processados
+    printf("Peso total dos %d itens: %d", total_itens, sum);
+
+
 
     return 0;
 }
