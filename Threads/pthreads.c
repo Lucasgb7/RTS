@@ -9,41 +9,72 @@
 #include <time.h>
 #define LENGTH 1500 
 
-// funcao para executar a segunda thread
-void *inc_x(void *x_void_ptr){
-    // incrementa ate 100
-    int *x_ptr = (int *)x_void_ptr;
-    while (++(*x_ptr) < 100)
+void *conveyorBelt_A(void *i){
+    int *x = (int *)i;
+    while(++(*x) < LENGTH)
         ;
+    printf("Esteira 1 - CHEIA\t");
 
-    printf("x incremento completo\n");
+    return NULL;
+}
+void *conveyorBelt_B(void *i){
+    int *x = (int *)i;
+    while(++(*x) < LENGTH)
+        ;
+    printf("Esteira 2 - CHEIA\t");
 
-    // a funcao deve retornar algo, senão irá retornar NULL
+    return NULL;
+}
+void *conveyorBelt_C(void *i){
+    int *x = (int *)i;
+    while(++(*x) < LENGTH)
+        ;
+    printf("Esteira 3 - CHEIA\t");
+
     return NULL;
 }
 
 int main() {
-    int x = 0, y = 0;
-    printf("x: %d, y: %d\n", x, y); // printa os valores iniciais
-    pthread_t inc_x_thread; // referencia para segunda thread
-    // cria segunda thread que executa a funcao inc_x
-    if (pthread_create(&inc_x_thread, NULL, inc_x, &x)){
+    int sum = 0;
+    int a = 0, b = 0, c = 0;
+    // Inicializa esteiras com 0 produtos
+    printf("Contagem inicial\n"); 
+    printf("Esteira A: %d\nEsteira B: %d\nEsteira C: %d\n", a, b, c);
+    // Rerencia para as threads das esteiras
+    pthread_t thread1,thread2, thread3;
+
+    // Cria as threads das esteiras
+    if (pthread_create(&thread1, NULL, *conveyorBelt_A, &a)){
         fprintf(stderr, "Erro ao criar thread\n");
         return 1;
     }
-    // incrementa y até 100 na primeira thread
-    while (++y < 100)
-        ;
+    if (pthread_create(&thread2, NULL, *conveyorBelt_B, &b)){
+        fprintf(stderr, "Erro ao criar thread\n");
+        return 1;
+    }
+    if (pthread_create(&thread3, NULL, *conveyorBelt_C, &c)){
+        fprintf(stderr, "Erro ao criar thread\n");
+        return 1;
+    }
 
-    printf("y incremento completo\n");
+    sum = a + b + c;
 
-    // espera a segunda thread terminar
-    if (pthread_join(inc_x_thread, NULL)){
+    // Aguarda as outras threads terminarem
+    if (pthread_join(thread1, NULL)){
+        fprintf(stderr, "Error joining thread\n");
+        return 2;
+    }
+    if (pthread_join(thread2, NULL)){
+        fprintf(stderr, "Error joining thread\n");
+        return 2;
+    }
+    if (pthread_join(thread3, NULL)){
         fprintf(stderr, "Error joining thread\n");
         return 2;
     }
     // mostra o resultado
-    printf("x: %d, y: %d\n", x, y);
+    printf("\nSoma total: %d\n", sum);
+    printf("Esteira A: %d\nEsteira B: %d\nEsteira C: %d\n", a, b, c);
 
     return 0;
 }
