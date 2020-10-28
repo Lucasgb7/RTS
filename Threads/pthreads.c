@@ -9,17 +9,41 @@
 #include <time.h>
 #include <termios.h>
 #include <fcntl.h>
-#define LENGTH 10
+#define LENGTH 1500
 #define MAX_WEIGHT 10
 
 int sum_weights;
 int total_items;
+int previous_items;
 int weights[LENGTH];
 
 pthread_mutex_t lock;
 
-int kbhit(void)
+int update_weights(int weights[])
 {
+    // Soma os pesos que estão armazenados no vetor
+    for (int i = 0; i < LENGTH; i++)
+    {
+        sum_weights += weights[i];
+    }
+    return sum_weights;
+}
+
+void update_display(int total_items, int sum_weights)
+{
+    printf("\n\n-----L C D-----");
+    printf("\nNº de Itens: %d", total_items);
+    printf("\nPeso Total: %d kg", sum_weights);
+}
+
+int input_simulation()
+{
+    int i = (rand() % 3) + 1; // Sorteia uma das 3 esteiras para inserir
+    printf("\nEsteira[%d]: ", i);
+    return i;
+}
+
+int kbhit(void){
 	struct termios oldt, newt;
 	int ch;
 	int oldf;
@@ -48,6 +72,7 @@ int kbhit(void)
 int random_weight(){
     int x = rand() % MAX_WEIGHT;
     // Caso gerar um valor igual a zero, retorna 1
+    // printf("\tPeso+: %d", x);
     if (x == 0)
         return 1;
     else return x;
@@ -58,17 +83,21 @@ void *conveyorBelt_A(void *args)
     while (total_items < LENGTH)
     {
         if (kbhit())
-        {   
-            fflush(stdin);
+        {
             if (getchar() == '1') // Caso digite: 1
             {
-                pthread_mutex_lock(&lock);   // Bloqueia a variavel
-                total_items++;               // Atualiza o numero de itens
-                weights[total_items] = (intptr_t) random_weight();    // Adiciona o peso do item no vetor
-                pthread_mutex_unlock(&lock); // Libera a variavel
+                pthread_mutex_lock(&lock);              // Bloqueia a variavel
+                total_items += 100;                          // Atualiza o numero de itens
+                weights[total_items] = random_weight(); // Adiciona o peso do item no vetor
+                pthread_mutex_unlock(&lock);            // Libera a variavel
 
-                printf("A++");
+                printf("\nA++");
             }
+        }
+        // Atualiza display
+        if (total_items != previous_items){
+            update_display(total_items, update_weights(weights));
+            previous_items = total_items;
         }
     }
 
@@ -81,16 +110,21 @@ void *conveyorBelt_B(void *args)
     {
         if (kbhit())
         {
-            fflush(stdin);
             if (getchar() == '2') // Caso digite: 2
             {
-                pthread_mutex_lock(&lock);   // Bloqueia a variavel
-                total_items++;               // Atualiza o numero de itens
-                weights[total_items] = (intptr_t) random_weight;    // Adiciona o peso do item no vetor
-                pthread_mutex_unlock(&lock); // Libera a variavel
+                pthread_mutex_lock(&lock);              // Bloqueia a variavel
+                total_items += 100;                     // Atualiza o numero de itens
+                weights[total_items] = random_weight(); // Adiciona o peso do item no vetor
+                pthread_mutex_unlock(&lock);            // Libera a variavel
 
-                printf("B++");
+                printf("\nB++");
             }
+        }
+        // Atualiza display
+        if (total_items != previous_items)
+        {
+            update_display(total_items, update_weights(weights));
+            previous_items = total_items;
         }
     }
 
@@ -103,16 +137,21 @@ void *conveyorBelt_C(void *args)
     {
         if (kbhit())
         {
-            fflush(stdin);
             if (getchar() == '3') // Caso digite: 3
             {
                 pthread_mutex_lock(&lock);              // Bloqueia a variavel
-                total_items++;                          // Atualiza o numero de itens
-                weights[total_items] = (intptr_t) random_weight;   // Adiciona o peso do item no vetor
+                total_items += 100;                          // Atualiza o numero de itens
+                weights[total_items] = random_weight(); // Adiciona o peso do item no vetor
                 pthread_mutex_unlock(&lock);            // Libera a variavel
 
-                printf("C++");
+                printf("\nC++");
             }
+        }
+        // Atualiza display
+        if (total_items != previous_items)
+        {
+            update_display(total_items, update_weights(weights));
+            previous_items = total_items;   
         }
     }
 
@@ -131,9 +170,11 @@ int main()
     pthread_t thread1, thread2, thread3;
     while (1)
     {
+        printf("\n--- Iniciando contagem ---\n");
         // Inicializa as variaveis
         sum_weights = 0;
         total_items = 0;
+        previous_items = 0;
         printf("1 - Adicionar na esteira A\n");
         printf("2 - Adicionar na esteira B\n");
         printf("3 - Adicionar na esteira C\n");
@@ -162,16 +203,13 @@ int main()
             fprintf(stderr, "Erro ao aguardar a thread\n");
             return 2;
         }
-        pthread_mutex_destroy(&lock);
-        pthread_exit(NULL);
+        start = clock();
+        update_weights(weights);
+        end = clock();
+        cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
+        update_display(total_items, update_weights(weights));   // Printa o display
+        printf("\nTempo de pesagem: %f segundos\n", cpu_time_used);
     }
-    //Soma os pesos que estão armazenados no vetor
-    for (int i = 0; i < LENGTH; i++)
-    {
-        sum_weights += weights[i];
-    }
-    //Mostra a soma dos pesos e a quantidade de itens processados
-    printf("Peso total dos %d itens: %d", total_items, sum_weights);
 
     return 0;
 }
