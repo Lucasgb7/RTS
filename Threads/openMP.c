@@ -83,37 +83,98 @@ int main()
 {
     total_items = 0;
     previous_items = 0;
-
-    #pragma omp parallel num_threads(3)
+    while (1)
     {
-
-        #pragma omp sections
+        #pragma omp parallel num_threads(3)
         {
-            // Primeira thread
-            #pragma section
+
+            #pragma omp sections
             {
-                while (total_items < LENGTH)
+                // Primeira thread
+                #pragma section
                 {
-                    if (kbhit())
+                    while (total_items < LENGTH)
                     {
-                        if (getchar() == '1') // Caso digite: 1
+                        if (kbhit())
                         {
-                            #pragma omp critical     // Bloqueia a variavel
-                            {                      
-                                total_items += 100;                     // Atualiza o numero de itens
-                                weights[total_items] = random_weight(); // Adiciona o peso do item no vetor
-                            }                        // Libera a variavel
-                            printf("\nA++");
+                            if (getchar() == '1') // Caso digite: 1
+                            {
+                                #pragma omp critical     // Bloqueia a variavel
+                                {                      
+                                    total_items += 100;                     // Atualiza o numero de itens
+                                    weights[total_items] = random_weight(); // Adiciona o peso do item no vetor
+                                }                        // Libera a variavel
+                                printf("Thread %d ativada.\n", omp_get_thread_num());
+                            }
+                        }
+                        // Atualiza display
+                        if (total_items != previous_items){
+                            update_display(total_items, update_weights(weights));
+                            previous_items = total_items;
                         }
                     }
-                    // Atualiza display
-                    if (total_items != previous_items){
-                        update_display(total_items, update_weights(weights));
-                        previous_items = total_items;
+                }
+                //-----------------------------//
+
+                // Segunda thread
+                #pragma section
+                {
+                    while (total_items < LENGTH)
+                    {
+                        if (kbhit())
+                        {
+                            if (getchar() == '2') // Caso digite: 1
+                            {
+                                #pragma omp critical     // Bloqueia a variavel
+                                {                      
+                                    total_items += 100;                     // Atualiza o numero de itens
+                                    weights[total_items] = random_weight(); // Adiciona o peso do item no vetor
+                                }                        // Libera a variavel
+                                printf("Thread %d ativada.\n", omp_get_thread_num());
+                            }
+                        }
+                        // Atualiza display
+                        if (total_items != previous_items){
+                            update_display(total_items, update_weights(weights));
+                            previous_items = total_items;
+                        }
                     }
                 }
-            }
-            //-----------------------------//
-        }   
+
+                //-----------------------------//
+                // Terçeira thread
+                #pragma section
+                {
+                    while (total_items < LENGTH)
+                    {
+                        if (kbhit())
+                        {
+                            if (getchar() == '3') // Caso digite: 1
+                            {
+                                #pragma omp critical     // Bloqueia a variavel
+                                {                      
+                                    total_items += 100;                     // Atualiza o numero de itens
+                                    weights[total_items] = random_weight(); // Adiciona o peso do item no vetor
+                                }                        // Libera a variavel
+                                printf("Thread %d ativada.\n", omp_get_thread_num());
+                            }
+                        }
+                        // Atualiza display
+                        if (total_items != previous_items){
+                            update_display(total_items, update_weights(weights));
+                            previous_items = total_items;
+                        }
+                    }
+                }
+                //-----------------------------//
+
+
+            }   
+        }  
+
+        update_display(total_items, update_weights(weights));   // Printa o display
+
     }
+    
+    
 }
