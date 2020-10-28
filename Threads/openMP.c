@@ -15,6 +15,7 @@ gcc -o openMP -fopenmp openMP.c
 #define MAX_WEIGHT 10   // Peso maximo dos produtos
 
 int total_items;
+int sum_weights;
 int weights[LENGTH];
 int previous_items;
 
