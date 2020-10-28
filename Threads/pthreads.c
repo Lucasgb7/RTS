@@ -18,29 +18,6 @@ int previous_items;
 int weights[LENGTH];
 pthread_mutex_t lock;
 
-int update_weights(int weights[])
-{
-    // Soma os pesos que estão armazenados no vetor
-    for (int i = 0; i < LENGTH; i++)
-    {
-        sum_weights += weights[i];
-    }
-    return sum_weights;
-}
-
-void update_display(int total_items, int sum_weights)
-{
-    printf("\n\n-----L C D-----");
-    printf("\nNº de Itens: %d", total_items);
-    printf("\nPeso Total: %d kg", sum_weights);
-}
-
-int input_simulation()
-{
-    int i = (rand() % 3) + 1; // Sorteia uma das 3 esteiras para inserir
-    printf("\nEsteira[%d]: ", i);
-    return i;
-}
 
 int kbhit(void)
 {
@@ -78,6 +55,23 @@ int random_weight()
         return 1;
     else
         return x;
+}
+
+int update_weights(int weights[])
+{
+    // Soma os pesos que estão armazenados no vetor
+    for (int i = 0; i < LENGTH; i++)
+    {
+        sum_weights += weights[i];
+    }
+    return sum_weights;
+}
+
+void update_display(int total_items, int sum_weights)
+{
+    printf("\n\n-----L C D-----");
+    printf("\nNº de Itens: %d", total_items);
+    printf("\nPeso Total: %d kg", sum_weights);
 }
 
 void *conveyorBelt_A(void *args)
@@ -205,17 +199,19 @@ int main()
             fprintf(stderr, "Erro ao aguardar a thread\n");
             return 2;
         }
+        // Calcula o tempo para pesagem
         start = clock();
         update_weights(weights);
         end = clock();
         double weight_time = ((double)(end - start)) / CLOCKS_PER_SEC;
-
+        // Calcula a taxa de atualização do display
         start = clock();
-        update_display(total_items, update_weights(weights)); // Printa o display
+        update_display(total_items, update_weights(weights));
         end = clock();
         double display_time = ((double)(end - start)) / CLOCKS_PER_SEC;
-        
-        printf("\nTaxa de atualização: %f segundos\n", display_time);
+        // Fornece os tempos testados
+        printf("\nTaxa de atualização: %f segundos", display_time);
+        printf("\nTempo de contagem: %f segundos", weight_time*LENGTH);
         printf("\nTempo de pesagem: %f segundos\n", weight_time);
         // run--;  // Finaliza a thread
     }
