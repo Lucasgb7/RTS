@@ -167,10 +167,10 @@ int main()
     srand(time(NULL));
     clock_t start, end;
     double cpu_time_used;
-
     // Referência para as threads das esteiras
     pthread_t thread1, thread2, thread3;
-    while (1)
+    int run = 1;
+    while (run)
     {
         printf("\n--- Iniciando contagem ---\n");
         // Inicializa as variaveis
@@ -181,7 +181,7 @@ int main()
         printf("2 - Adicionar na esteira B\n");
         printf("3 - Adicionar na esteira C\n");
         pthread_mutex_init(&lock, NULL);
-
+        start = clock();
         // Cria as threads das esteiras
         if (pthread_create(&thread1, NULL, *conveyorBelt_A, NULL))
         {
@@ -208,10 +208,16 @@ int main()
         start = clock();
         update_weights(weights);
         end = clock();
-        cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
-        update_display(total_items, update_weights(weights)); // Printa o display
-        printf("\nTempo de pesagem: %f segundos\n", cpu_time_used);
-    }
+        double weight_time = ((double)(end - start)) / CLOCKS_PER_SEC;
 
+        start = clock();
+        update_display(total_items, update_weights(weights)); // Printa o display
+        end = clock();
+        double display_time = ((double)(end - start)) / CLOCKS_PER_SEC;
+        
+        printf("\nTaxa de atualização: %f segundos\n", display_time);
+        printf("\nTempo de pesagem: %f segundos\n", weight_time);
+        // run--;  // Finaliza a thread
+    }
     return 0;
 }
