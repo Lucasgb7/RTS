@@ -94,27 +94,31 @@ int main()
         start = clock();
         while (total_items < LENGTH)
         {
-            while (!kbhit());
-            
-                if (getchar() == '1')   // Caso digite: 1
+            while (kbhit()){
+                switch (getchar())
                 {
+                case '1':
                     total_items += 100;                     // Atualiza o numero de itens
                     weights[total_items] = random_weight(); // Adiciona o peso do item no vetor
                     printf("\nA++");
-                }
-                else if (getchar() == '2')  // Caso digite: 2
-                {
+                    break;
+
+                case '2':
                     total_items += 100;                     // Atualiza o numero de itens
                     weights[total_items] = random_weight(); // Adiciona o peso do item no vetor
                     printf("\nB++");
-                }
-                else if (getchar() == '3')  // Caso digite: 3
-                {
+                    break;
+
+                case '3':
                     total_items += 100;                     // Atualiza o numero de itens
                     weights[total_items] = random_weight(); // Adiciona o peso do item no vetor
                     printf("\nC++");
+                    break;
+                
+                default:
+                    break;
                 }
-            
+            }
             // Atualiza display
             if (total_items != previous_items)
             {
