@@ -9,14 +9,13 @@
 #include <time.h>
 #include <termios.h>
 #include <fcntl.h>
+
 #define LENGTH 1500
 #define MAX_WEIGHT 10
-
 int sum_weights;
 int total_items;
 int previous_items;
 int weights[LENGTH];
-
 pthread_mutex_t lock;
 
 int update_weights(int weights[])
@@ -43,39 +42,42 @@ int input_simulation()
     return i;
 }
 
-int kbhit(void){
-	struct termios oldt, newt;
-	int ch;
-	int oldf;
-	
-	tcgetattr(STDIN_FILENO, &oldt);
-	newt = oldt;
-	newt.c_lflag &= ~(ICANON | ECHO);
-	tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-	oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
-	fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
-	
-	ch = getchar();
-	
-	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
-	fcntl(STDIN_FILENO, F_SETFL, oldf);
-	
-	if(ch != EOF)
-	{
-		ungetc(ch, stdin);
-		return 1;
-	}
-	
-	return 0;
+int kbhit(void)
+{
+    struct termios oldt, newt;
+    int ch;
+    int oldf;
+
+    tcgetattr(STDIN_FILENO, &oldt);
+    newt = oldt;
+    newt.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+    oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
+    fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
+
+    ch = getchar();
+
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+    fcntl(STDIN_FILENO, F_SETFL, oldf);
+
+    if (ch != EOF)
+    {
+        ungetc(ch, stdin);
+        return 1;
+    }
+
+    return 0;
 }
 
-int random_weight(){
+int random_weight()
+{
     int x = rand() % MAX_WEIGHT;
     // Caso gerar um valor igual a zero, retorna 1
     // printf("\tPeso+: %d", x);
     if (x == 0)
         return 1;
-    else return x;
+    else
+        return x;
 }
 
 void *conveyorBelt_A(void *args)
@@ -87,7 +89,7 @@ void *conveyorBelt_A(void *args)
             if (getchar() == '1') // Caso digite: 1
             {
                 pthread_mutex_lock(&lock);              // Bloqueia a variavel
-                total_items += 100;                          // Atualiza o numero de itens
+                total_items += 100;                     // Atualiza o numero de itens
                 weights[total_items] = random_weight(); // Adiciona o peso do item no vetor
                 pthread_mutex_unlock(&lock);            // Libera a variavel
 
@@ -95,7 +97,8 @@ void *conveyorBelt_A(void *args)
             }
         }
         // Atualiza display
-        if (total_items != previous_items){
+        if (total_items != previous_items)
+        {
             update_display(total_items, update_weights(weights));
             previous_items = total_items;
         }
@@ -140,7 +143,7 @@ void *conveyorBelt_C(void *args)
             if (getchar() == '3') // Caso digite: 3
             {
                 pthread_mutex_lock(&lock);              // Bloqueia a variavel
-                total_items += 100;                          // Atualiza o numero de itens
+                total_items += 100;                     // Atualiza o numero de itens
                 weights[total_items] = random_weight(); // Adiciona o peso do item no vetor
                 pthread_mutex_unlock(&lock);            // Libera a variavel
 
@@ -151,7 +154,7 @@ void *conveyorBelt_C(void *args)
         if (total_items != previous_items)
         {
             update_display(total_items, update_weights(weights));
-            previous_items = total_items;   
+            previous_items = total_items;
         }
     }
 
@@ -164,7 +167,6 @@ int main()
     srand(time(NULL));
     clock_t start, end;
     double cpu_time_used;
-    // double cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC
 
     // Referência para as threads das esteiras
     pthread_t thread1, thread2, thread3;
@@ -207,7 +209,7 @@ int main()
         update_weights(weights);
         end = clock();
         cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
-        update_display(total_items, update_weights(weights));   // Printa o display
+        update_display(total_items, update_weights(weights)); // Printa o display
         printf("\nTempo de pesagem: %f segundos\n", cpu_time_used);
     }
 
