@@ -1,5 +1,5 @@
 /*
-Arquivo: esteiras.c
+Arquivo: main.c
 Projeto 1: Implementar uma contagem de produtos atraves de 3 esteiras, utilizando o sistema operacional FreeRTOS.  
 Desenvolvedores:
     Lucas Jose da Cunha
