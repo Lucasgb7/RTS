@@ -6,7 +6,7 @@ Desenvolvedores:
     Luiz Alberto Zimmermmann Zabel Martins Pinto
 
 Professor: Felipe Viel
-Disciplina: Sistemas em Tempo Real
+Disciplina: Sistemas em Tempo Real 
 Universidade:Universidade do Vale do Itajai - UNIVALI
 */
 
@@ -16,7 +16,8 @@ Universidade:Universidade do Vale do Itajai - UNIVALI
 #include "esp_system.h"
 #include "driver/gpio.h"
 #include "nvs_flash.h"
- 
+
+
 // Tempo que cada produto entra em cada esteira (milisegundos) 
 #define CONVEYOR_T1 1000
 #define CONVEYOR_T2 500
@@ -26,22 +27,26 @@ Universidade:Universidade do Vale do Itajai - UNIVALI
 #define UPDATE_TIME 2000
 
 // Peso de cada produto de cada esteira (kg)
+#define SIZE 1500
 #define WEIGHT_C1 5.0
 #define WEIGHT_C2 2.0
 #define WEIGHT_C3 0.5
 
 
 static int nProducts = 0;
-static float weights[1500] = {0x0};
+static float weights[SIZE] = {0x0};
 
 void weightSum()
 {
-    // suspender as demais tasks
+    // TODO suspender as demais tasks
     
     float totalWeight = 0;
     
     // criar threads para realizar a soma paralelamente
-    for(int i = 0; i < 1500; i++)
+
+
+    
+    for(int i = 0; i < SIZE; i++)
     {
         totalWeight += weights[i];
     }
@@ -57,7 +62,7 @@ void productSum(float weight)
     weights[nProducts] = weight;
     nProducts++;
 
-    if (nProducts >= 1500)
+    if (nProducts >= SIZE)
     {
         weightSum(); 
         nProducts = 0;
@@ -141,6 +146,4 @@ void app_main()
     xTaskCreate(&conveyorBelt_B, "conveyorBelt_B", 2048, NULL, 2, NULL);
     xTaskCreate(&conveyorBelt_C, "conveyorBelt_C", 2048, NULL, 2, NULL);
     xTaskCreate(&display, "display", 2048, NULL, 3, NULL);
-    // criar task para monitoramento do botão de parada
-
 }
