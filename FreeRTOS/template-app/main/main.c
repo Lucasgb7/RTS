@@ -55,7 +55,10 @@ TaskHandle_t xHandles[3];
 SemaphoreHandle_t Semaphore = NULL;
 SemaphoreHandle_t Semaphore_Sum = NULL;
 
-void weightSum(int id)
+// Timers
+int64_t totalStart, sumStart, sumEnd; 
+
+void weightSum()
 {
     // Bloqueia o acesso ao recurso compartilhado para as outras tasks
     if (xSemaphoreTake(Semaphore_Sum, (TickType_t)0))
@@ -77,7 +80,7 @@ void weightSum(int id)
     }
 }
 
-void productSum(float weight, int id)
+void productSum(float weight)
 {
 
     // Bloqueia o acesso ao recurso compartilhado para as outras tasks
@@ -87,8 +90,13 @@ void productSum(float weight, int id)
         nProducts++;
         if (nProducts >= PRODUCTS_SIZE)
         {
-            weightSum(id);
+            sumStart = esp_timer_get_time();
+            weightSum();
             nProducts = 0;
+            sumEnd = esp_timer_get_time();
+            printf("Tempo contagem: %fs\n", ((double) (sumEnd - sumStart)) / 1000000);
+            printf("Tempo execução: %fs\n", ((double) (sumEnd - totalStart)) / 1000000);
+            totalStart = esp_timer_get_time();
         }
 
         if (xSemaphoreGive(Semaphore) != pdTRUE)
@@ -102,7 +110,6 @@ void conveyorBelt_A(void *pvParameter)
 {
     TickType_t xLastWakeTime;
 
-    int id = 0;
 
     // Retorna o tempo atual
     xLastWakeTime = xTaskGetTickCount();
@@ -111,7 +118,7 @@ void conveyorBelt_A(void *pvParameter)
     {
         // Espera o produto para somar
         vTaskDelayUntil(&xLastWakeTime, CONVEYOR_T1 / portTICK_RATE_MS);
-        productSum(WEIGHT_C1, id);
+        productSum(WEIGHT_C1);
     }
 }
 
@@ -119,7 +126,6 @@ void conveyorBelt_B(void *pvParameter)
 {
     TickType_t xLastWakeTime;
 
-    int id = 1;
     // Retorna o tempo atual
     xLastWakeTime = xTaskGetTickCount();
 
@@ -127,7 +133,7 @@ void conveyorBelt_B(void *pvParameter)
     {
         // Espera o produto para somar
         vTaskDelayUntil(&xLastWakeTime, CONVEYOR_T2 / portTICK_RATE_MS);
-        productSum(WEIGHT_C2, id);
+        productSum(WEIGHT_C2);
     }
 }
 
@@ -135,7 +141,6 @@ void conveyorBelt_C(void *pvParameter)
 {
     TickType_t xLastWakeTime;
 
-    int id = 2;
     // Retorna o tempo atual
     xLastWakeTime = xTaskGetTickCount();
 
@@ -143,7 +148,7 @@ void conveyorBelt_C(void *pvParameter)
     {
         // Espera o produto para somar
         vTaskDelayUntil(&xLastWakeTime, CONVEYOR_T3 / portTICK_RATE_MS);
-        productSum(WEIGHT_C3, id);
+        productSum(WEIGHT_C3);
     }
 }
 
@@ -250,7 +255,9 @@ void app_main()
     vSemaphoreCreateBinary(Semaphore);
     vSemaphoreCreateBinary(Semaphore_Sum);
     // Inicializa as tasks do programa
+    // Criacao das threads xTaskCreate(codigoTask, nome, tam_Task, NULL, nivelPrioridade, NULL)
     xTaskCreate(&touchPad, "touchPad", 2048, NULL, 2, NULL);
+    totalStart = esp_timer_get_time();
     xTaskCreate(&conveyorBelt_A, "conveyorBelt_A", 2048, NULL, 2, &xHandles[0]);
     xTaskCreate(&conveyorBelt_B, "conveyorBelt_B", 2048, NULL, 2, &xHandles[1]);
     xTaskCreate(&conveyorBelt_C, "conveyorBelt_C", 2048, NULL, 2, &xHandles[2]);
