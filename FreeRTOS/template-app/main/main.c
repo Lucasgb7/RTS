@@ -4,6 +4,7 @@ Projeto 1: Implementar uma contagem de produtos atraves de 3 esteiras, utilizand
 Desenvolvedores:
     Lucas Jose da Cunha
     Luiz Alberto Zimmermmann Zabel Martins Pinto
+    Teddy Ordoñez Nuñez
 
 Professor: Felipe Viel
 Disciplina: Sistemas em Tempo Real 
